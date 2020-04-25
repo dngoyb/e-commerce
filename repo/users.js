@@ -1,4 +1,5 @@
 const fs = require('fs');
+const crypto = require('crypto');
 class UsersRepo {
 	constructor(filename) {
 		if (!filename) {
@@ -21,22 +22,71 @@ class UsersRepo {
 		);
 	}
 	async create(attributes) {
+		attributes.id = this.randomId();
 		const records = await this.getAll();
 		records.push(attributes);
-
+		await this.writeAll(records);
+	}
+	async writeAll(records) {
 		await fs.promises.writeFile(
 			this.filename,
 			JSON.stringify(records, null, 2),
 		);
 	}
+	randomId() {
+		return crypto.randomBytes(4).toString('hex');
+	}
+
+	async getOne(id) {
+		const records = await this.getAll();
+		return records.find((record) => record.id === id);
+	}
+
+	async delete(id) {
+		const records = await this.getAll();
+		const filtered = records.filter((record) => record.id !== id);
+		await this.writeAll(filtered);
+	}
+
+	async update(id, attributes) {
+		const records = await this.getAll();
+		const filtered = records.find((record) => record.id === id);
+		if (!filtered) {
+			throw new Error(`No records with id of ${id}`);
+		}
+		Object.assign(filtered, attributes);
+		await this.writeAll(records);
+	}
+	async getOneBy(filtered) {
+		const records = await this.getAll();
+
+		for (const record of records) {
+			let found = true;
+
+			for (const key in filtered) {
+				if (filtered[key] !== record[key]) {
+					found = false;
+				}
+			}
+			if (found) {
+				return record;
+			}
+		}
+	}
 }
 
-const test = async () => {
-	const repo = new UsersRepo('users.json');
-	await repo.create({ email: 'test@test.com', password: 'password' });
-	const user = await repo.getAll();
+module.exports = new UsersRepo('users.json');
 
-	console.log(user);
-};
+// const test = async () => {
+// 	const repo = new UsersRepo('users.json');
+// 	// await repo.create({ email: 'test@test.com' });
+// 	let user = await repo.getAll();
+// 	// await repo.update('d652d80b', { password: 'Ngoy' });
+// 	user = await repo.getOneBy({ password: 'Ngoy', email: 'test@test.com' });
 
-test();
+// 	// const user = await repo.getAll();
+
+// 	console.log(user);
+// };
+
+// test();
