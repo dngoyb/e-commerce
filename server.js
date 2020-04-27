@@ -18,8 +18,8 @@ app.get('/signup', (req, res) => {
 		Your Id is: ${req.session.userId}
 			<form method="POST">
 				<input type="text" name="email" placeholder="Email"/>
-				<input type="password" name="password" placeholder="Password"/>
-				<input type="password" name="confirmPassword" placeholder="Confirm password"/>
+				<input type="text" name="password" placeholder="Password"/>
+				<input type="text" name="confirmPassword" placeholder="Confirm password"/>
 				<button>Sign Up</button>
 			</form>
 		</div>
@@ -50,7 +50,7 @@ app.get('/signin', (req, res) => {
 		<div>
 			<form method="POST">
 				<input type="text" name="email" placeholder="Email"/>
-				<input type="password" name="password" placeholder="Password"/>
+				<input type="text" name="password" placeholder="Password"/>
 				<button>Sign in</button>
 			</form>
 		</div>
@@ -68,7 +68,7 @@ app.post('/signin', async (req, res) => {
 		user.password,
 		password,
 	);
-	if (validPassword) {
+	if (!validPassword) {
 		return res.send(`Invalid Password`);
 	}
 	req.session.userId = user.id;
