@@ -1,5 +1,8 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const util = require('util');
+
+const scrypt = util.promisify(crypto.scrypt);
 class UsersRepo {
 	constructor(filename) {
 		if (!filename) {
@@ -23,9 +26,21 @@ class UsersRepo {
 	}
 	async create(attributes) {
 		attributes.id = this.randomId();
+		const salt = crypto.randomBytes(8).toString('hex');
+		const buf = await scrypt(attributes.password, salt, 64);
+
 		const records = await this.getAll();
-		records.push(attributes);
+
+		const hashedRecord = {
+			...attributes,
+			password: `${buf.toString('hex')}.${salt}`,
+		};
+
+		records.push(hashedRecord);
+
 		await this.writeAll(records);
+
+		return hashedRecord;
 	}
 	async writeAll(records) {
 		await fs.promises.writeFile(
@@ -73,16 +88,23 @@ class UsersRepo {
 			}
 		}
 	}
+
+	async comparePasswords(saved, supplied) {
+		const [hashed, salt] = saved.split('.');
+		const hashedSupplied = await scrypt(hashed, salt, 64);
+
+		return hashed === hashedSupplied.toString('hex');
+	}
 }
 
 module.exports = new UsersRepo('users.json');
 
 // const test = async () => {
 // 	const repo = new UsersRepo('users.json');
-// 	// await repo.create({ email: 'test@test.com' });
+// 	await repo.create({ email: 'test@test.com', password: 'password' });
 // 	let user = await repo.getAll();
 // 	// await repo.update('d652d80b', { password: 'Ngoy' });
-// 	user = await repo.getOneBy({ password: 'Ngoy', email: 'test@test.com' });
+// 	// user = await repo.getOneBy({ password: 'Ngoy', email: 'test@test.com' });
 
 // 	// const user = await repo.getAll();
 
