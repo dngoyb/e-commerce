@@ -1,35 +1,37 @@
 const express = require('express');
 const usersRepo = require('../../repo/users');
+const signupTemplate = require('../../views/admin/auth/signup');
+const signinTemplate = require('../../views/admin/auth/signin');
+const { check, validationResult } = require('express-validator');
+const {
+	requireEmail,
+	requirePassword,
+	requireConfirmPassword,
+} = require('./validators');
 
 const router = express.Router();
 
 router.get('/signup', (req, res) => {
-	res.send(`
-		<div>
-		Your Id is: ${req.session.userId}
-			<form method="POST">
-				<input type="text" name="email" placeholder="Email"/>
-				<input type="text" name="password" placeholder="Password"/>
-				<input type="text" name="confirmPassword" placeholder="Confirm password"/>
-				<button>Sign Up</button>
-			</form>
-		</div>
-	`);
+	res.send(signupTemplate({ req }));
 });
 
-router.post('/signup', async (req, res) => {
-	const { email, password, confirmPassword } = req.body;
-	const existEmail = await usersRepo.getOneBy({ email });
-	if (existEmail) {
-		return res.send('Email already exist');
-	}
-	if (password !== confirmPassword) {
-		return res.send('Password not match');
-	}
-	const user = await usersRepo.create({ email, password });
-	req.session.userId = user.Id;
-	res.send('Account created!!!');
-});
+console.log(check('email').isEmail());
+router.post(
+	'/signup',
+	[requirePassword, requireConfirmPassword],
+	async (req, res) => {
+		const errors = validationResult(req);
+		const { email, password, confirmPassword } = req.body;
+
+		if (!errors.isEmpty()) {
+			return res.status(422).json({ errors: errors.array() });
+		}
+
+		const user = await usersRepo.create({ email, password });
+		req.session.userId = user.Id;
+		res.send('Account created!!!');
+	},
+);
 
 router.get('/signout', (req, res) => {
 	req.session = null;
@@ -37,15 +39,7 @@ router.get('/signout', (req, res) => {
 });
 
 router.get('/signin', (req, res) => {
-	res.send(`
-		<div>
-			<form method="POST">
-				<input type="text" name="email" placeholder="Email"/>
-				<input type="text" name="password" placeholder="Password"/>
-				<button>Sign in</button>
-			</form>
-		</div>
-	`);
+	res.send(signinTemplate());
 });
 
 router.post('/signin', async (req, res) => {
