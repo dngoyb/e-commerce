@@ -15,16 +15,16 @@ router.get('/signup', (req, res) => {
 	res.send(signupTemplate({ req }));
 });
 
-console.log(check('email').isEmail());
 router.post(
 	'/signup',
-	[requirePassword, requireConfirmPassword],
+	[requireEmail, requirePassword, requireConfirmPassword],
 	async (req, res) => {
 		const errors = validationResult(req);
-		const { email, password, confirmPassword } = req.body;
+		const { email, password } = req.body;
 
 		if (!errors.isEmpty()) {
-			return res.status(422).json({ errors: errors.array() });
+			console.log(errors);
+			return res.send(signupTemplate({ req, errors }));
 		}
 
 		const user = await usersRepo.create({ email, password });
