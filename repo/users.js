@@ -74,7 +74,6 @@ class UsersRepo {
 	}
 	async getOneBy(filtered) {
 		const records = await this.getAll();
-		console.log(records);
 		for (const record of records) {
 			let found = true;
 
@@ -90,10 +89,14 @@ class UsersRepo {
 	}
 
 	async comparePasswords(saved, supplied) {
-		const [hashed, salt] = saved.split('.');
-		const hashedSupplied = await scrypt(supplied, salt, 64);
+		try {
+			const [hashed, salt] = saved.split('.');
+			const hashedSupplied = await scrypt(supplied, salt, 64);
 
-		return hashed === hashedSupplied.toString('hex');
+			return hashed === hashedSupplied.toString('hex');
+		} catch (error) {
+			return '';
+		}
 	}
 }
 
