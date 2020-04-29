@@ -74,7 +74,7 @@ class UsersRepo {
 	}
 	async getOneBy(filtered) {
 		const records = await this.getAll();
-
+		console.log(records);
 		for (const record of records) {
 			let found = true;
 
