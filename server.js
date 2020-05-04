@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
-const router = require('./router/admin/auth');
+const authRouter = require('./router/admin/auth');
+const productsRouter = require('./router/admin/products');
 
 const app = express();
 
@@ -13,7 +14,8 @@ app.use(
 	}),
 );
 
-app.use(router);
+app.use(authRouter);
+app.use(productsRouter);
 
 const port = process.env.PORT || 3000;
 

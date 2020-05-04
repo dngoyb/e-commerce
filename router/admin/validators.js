@@ -54,4 +54,11 @@ module.exports = {
 				throw new Error(`Password does not match`);
 			}
 		}),
+	requireProductsTitle: check('title')
+		.isLength({ min: 5, max: 40 })
+		.withMessage('Title too short'),
+	requireProductsPrice: check('price')
+		.toFloat()
+		.isFloat({ min: 1 })
+		.withMessage('Price must be a number'),
 };
