@@ -56,9 +56,9 @@ module.exports = {
 		}),
 	requireProductsTitle: check('title')
 		.isLength({ min: 5, max: 40 })
-		.withMessage('Title too short'),
+		.withMessage('Title must be between 5 and 40 characters'),
 	requireProductsPrice: check('price')
 		.toFloat()
 		.isFloat({ min: 1 })
-		.withMessage('Price must be a number'),
+		.withMessage('Price must be a number greater than 1'),
 };
