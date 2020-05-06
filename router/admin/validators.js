@@ -22,7 +22,7 @@ module.exports = {
 		.isLength({ min: 4 })
 		.withMessage('Password not match')
 		.custom(async (confirmPassword, { req }) => {
-			if (confirmPassword !== req.body.confirmPassword) {
+			if (confirmPassword !== req.body.password) {
 				throw new Error('Passwords must match');
 			}
 		}),
