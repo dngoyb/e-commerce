@@ -28,10 +28,15 @@ router.post(
 	[requireProductsTitle, requireProductsPrice],
 	handleErrors(productNewTemplate),
 	async (req, res) => {
-		const image = req.file.buffer.toString('base64');
-		const { title, price } = req.body;
+		try {
+			const image = req.file.buffer.toString('base64');
+			const { title, price } = req.body;
 
-		await productsRepo.create({ title, price, image });
+			await productsRepo.create({ title, price, image });
+		} catch (error) {
+			res.redirect('/admin/products');
+		}
+
 		res.redirect('/admin/products');
 	},
 );
@@ -64,12 +69,17 @@ router.post(
 
 		try {
 			await productsRepo.update(req.params.id, changes);
-		} catch (err) {
-			return res.send('Could not find item');
-		}
+		} catch (err) {}
 
 		res.redirect('/admin/products');
 	},
 );
+
+router.post('/admin/products/:id/delete', requireAuth, async (req, res) => {
+	await productsRepo.delete(req.params.id);
+
+	// res.send('Item was deleted');
+	res.redirect('/admin/products');
+});
 
 module.exports = router;
